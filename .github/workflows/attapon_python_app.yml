@@ -1,6 +1,6 @@
 name: Python OpenWeatherMap App CI/CD
 
-# Triggar workflow när du pushar till main-branchen eller skapar en pull request
+# Triggar workflow när du pushar till main-branchen eller skapar en pull request t
 on:
   push:
     branches: [ main ]
