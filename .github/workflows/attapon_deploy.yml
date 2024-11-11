@@ -4,8 +4,28 @@ on:
   workflow_dispatch:
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t attaponsayod/attapon:latest .
+      
+      - name: Save Docker Image as TAR file
+        run: |
+          docker save attaponsayod/attapon:latest -o yourimage.tar
+
+      - name: Save Docker Image as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: docker-image
+          path: ./yourimage.tar
+
   deploy:
-    needs: build
+    needs: build  
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -19,9 +39,12 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker push yourusername/yourimage:latest
+          docker push attaponsayod/attapon:latest
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.ATTAPON_AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.ATTAPON_AZURE_CREDENTIALS }}
         run: echo "Deploying to Azure..."
