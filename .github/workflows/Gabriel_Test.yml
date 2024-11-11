@@ -33,7 +33,7 @@ jobs:
 
       - name: Upload error log if tests fail
         if: ${{ failure() && github.event.inputs.log_errors == 'true' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3  # Uppdaterad version
         with:
           name: error-log
           path: error.log  # Se till att du har en error.log om testerna misslyckas
@@ -55,7 +55,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
-
 
       - name: Publish Docker image to DockerHub
         run: |
@@ -80,4 +79,3 @@ jobs:
       - name: Deploy to Azure App
         run: |
           az webapp up --name myapp --resource-group myresourcegroup --plan myplan --docker-image ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-
