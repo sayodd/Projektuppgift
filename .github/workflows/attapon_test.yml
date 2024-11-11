@@ -1,4 +1,4 @@
-name: Test Application
+name: attapon Test Application
 
 on:
   workflow_dispatch:
