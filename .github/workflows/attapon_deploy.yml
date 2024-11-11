@@ -1,26 +1,9 @@
-name: Attapon Deploy Application
+name: Deploy Application
 
 on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-
-      - name: Build Docker Image
-        run: |
-          docker build -t attaponsayod/attapon:latest .
-          
-      - name: Save Docker Image as Artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: docker-image
-          path: ./yourimage.tar
-
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -31,12 +14,12 @@ jobs:
       - name: Log into DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
-          password: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
+          username: ${{ secrets.ATTAPON_DOCKER_USERNAME }}
+          password: ${{ secrets.ATTAPON_DOCKER_PASSWORD }}
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker push attaponsayod/attapon:latest
+          docker push yourusername/yourimage:latest
 
       - name: Deploy to Azure
         env:
