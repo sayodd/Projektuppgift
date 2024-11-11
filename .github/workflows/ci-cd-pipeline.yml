@@ -54,7 +54,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
-          password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}4
+          password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
 
 
       - name: Publish Docker image to DockerHub
