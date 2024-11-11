@@ -1,0 +1,28 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Logga in på Docker Hub
+      env:
+        DOCKER_USER: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
+      run: |
+        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+
+    - name: Bygg Docker-image
+      run: docker build . -t my-image-name:${{ github.sha }}
+
+    - name: Pusha Docker-image
+      run: docker push my-image-name:${{ github.sha }}
+
