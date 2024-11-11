@@ -4,7 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initial job
+        run: echo "Starting deploy workflow."
+
   build:
+    needs: start
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
@@ -25,6 +32,7 @@ jobs:
           path: ./yourimage.tar
 
   deploy:
+    needs: build  
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
