@@ -1,4 +1,4 @@
-from app import get_weather_data
+from app import get_weather_data    
 
 # test_app.py
 def test_fetch_weather_data():
