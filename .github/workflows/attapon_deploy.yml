@@ -1,0 +1,27 @@
+name: Attapon Deploy Application
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Log into DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
+          password: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
+
+      - name: Push Docker Image to DockerHub
+        run: |
+          docker push attaponsayod/attapon:latest
+
+      - name: Deploy to Azure
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: echo "Deploying to Azure..."
