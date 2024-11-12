@@ -46,7 +46,7 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker push attaponsayod/attapon
+          docker push attaponsayod/attapon:latest
 
       - name: Azure Login
         uses: azure/login@v1
