@@ -41,8 +41,8 @@ jobs:
       - name: Log into DockerHub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.ATTAPON_DOCKER_USERNAME }}
-          password: ${{ secrets.ATTAPON_DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
+          password: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
 
       - name: Push Docker Image to DockerHub
         run: |
