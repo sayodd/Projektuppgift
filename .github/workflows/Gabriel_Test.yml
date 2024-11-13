@@ -42,9 +42,9 @@ jobs:
     needs: build  # Kör endast om "build"-jobbet är klart
     runs-on: ubuntu-latest
     steps:
-      # Bygg Docker-imagen
-      - name: Build Docker image with buildx
-        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}.
+      # Bygg Docker-imagen med docker build
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/myapp .
 
       # Logga in på DockerHub
       - name: Login to DockerHub
