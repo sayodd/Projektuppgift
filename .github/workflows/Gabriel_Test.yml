@@ -12,7 +12,7 @@ on:
         default: 'false'
 
 jobs:
-  # Byggjobb
+  # Jobb för att bygga och testa applikationen
   build:
     runs-on: ubuntu-latest
 
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js (eller annan teknikstack du använder)
+      - name: Set up Node.js (eller annan teknikstack du använder)
         uses: actions/setup-node@v3
         with:
           node-version: '14'
@@ -30,18 +30,42 @@ jobs:
 
       - name: Run tests
         run: npm test
-        continue-on-error: true  # Det gör så att pipelinen fortsätter även om testerna misslyckas, kan justeras senare baserat på inputs
+        continue-on-error: true  # Fortsätt även om testerna misslyckas, kan justeras baserat på logik nedan
 
-  # Docker image jobb
+      - name: Generate error log if needed
+        if: ${{ github.event.inputs.log_errors == 'true' && failure() }}
+        run: echo "Tests failed" > error.log
+        continue-on-error: true
+
+  # Docker-jobb: Bygg och publicera Docker image
   docker:
-    needs: build  # Det här jobbet körs efter att build-jobbet är klart
+    needs: build  # Kör endast om "build"-jobbet är klart
     runs-on: ubuntu-latest
     steps:
       - name: Build Docker image
         run: |
           docker build -t myapp .
-      
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Publish Docker image to DockerHub
         run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push myapp
+
+  # Azure-jobb: Koppla Docker-imagen till Azure App (om alla tester är godkända)
+  azure_deploy:
+    needs: docker  # Kör endast om "docker"-jobbet är klart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Docker image to Azure App
+        run: |
+          az webapp config container set --name <azure-app-name> --resource-group <resource-group> --docker-custom-image-name myapp
