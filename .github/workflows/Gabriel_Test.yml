@@ -1,81 +1,94 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
-      log_errors:
-        description: 'Log errors if tests fail'
+      generate_error_log:
+        description: 'Generate error log if tests fail'
         required: false
+        default: 'false'
         type: boolean
+
+env:
+  OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
+  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
 
-      - name: Set up Python (eller annat språk)
-        uses: actions/setup-python@v3  # Uppdaterad till v3
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: '3.9'  # Justera beroende på ditt projekt
+          node-version: '14'
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt  # Byt ut med ditt eget beroendehanteringssystem
+        run: npm install
 
       - name: Run tests
-        run: |
-          pytest tests/  # Byt ut med ditt testkommando om det är annat än pytest
+        id: run_tests
+        run: npm test
 
-      - name: Upload error log if tests fail
-        if: ${{ failure() && github.event.inputs.log_errors == 'true' }}
-        uses: actions/upload-artifact@v3  # Fortsatt v3
+      - name: Upload test results if failed
+        if: failure() && ${{ github.event.inputs.generate_error_log == 'true' }}
+        uses: actions/upload-artifact@v3
         with:
-          name: error-log
-          path: error.log  # Se till att du har en error.log om testerna misslyckas
+          name: test-error-log
+          path: ./test-error.log
 
   build:
-    needs: test
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    if: ${{ success() }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
+    needs: test
 
-      - name: Build Docker image
-        run: |
-          docker build -t myapp .  # Bygg Docker-imagen från din Dockerfile
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Log in to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
 
-      - name: Publish Docker image to DockerHub
-        run: |
-          docker tag myapp:latest ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+      - name: Build Docker image
+        run: docker build -t myapp:${{ github.sha }} .
+
+      - name: Push Docker image to DockerHub
+        run: docker push myapp:${{ github.sha }}
 
   deploy:
-    needs: build
+    name: Deploy to Azure
     runs-on: ubuntu-latest
-    if: ${{ success() }}
+    needs: build
+    environment: production
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Set up Azure CLI
-        uses: azure/setup-azurecli@v1
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      - name: Log in to Azure
+      - name: Deploy Docker image to Azure App Service
         run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-
-      - name: Deploy to Azure App
-        run: |
-          az webapp up --name myapp --resource-group myresourcegroup --plan myplan --docker-image ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+          az webapp config container set \
+            --name my-azure-app \
+            --resource-group my-resource-group \
+            --docker-custom-image-name myapp:${{ github.sha }} \
+            --docker-registry-server-url https://index.docker.io \
+            --docker-registry-server-user ${{ secrets.DOCKER_GABRIEL_USERNAME }} \
+            --docker-registry-server-password ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
