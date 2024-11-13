@@ -5,6 +5,7 @@ on:
     workflows: ["Test Workflow"]  # Triggeras efter att Test Workflow har slutförts
     types:
       - completed
+      
 
 jobs:
   build_and_push:
