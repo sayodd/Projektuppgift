@@ -42,9 +42,9 @@ jobs:
     needs: build  # Kör endast om "build"-jobbet är klart
     runs-on: ubuntu-latest
     steps:
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_GABRIEL_USERNAME }}/myapp .
-
+     - name: Build Docker image
+    run: docker build -t ${{ secrets.DOCKER_GABRIEL_USERNAME }}/myapp .
+    
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
