@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Attapon_Docker_Image_CI
 
 on:
   push:
