@@ -44,7 +44,7 @@ jobs:
     steps:
       # Bygg Docker-imagen
       - name: Build Docker image with buildx
-        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/myapp .
+        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}.
 
       # Logga in på DockerHub
       - name: Login to DockerHub
