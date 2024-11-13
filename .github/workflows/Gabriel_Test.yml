@@ -56,6 +56,7 @@ jobs:
         run: |
           docker push myapp
 
+
   # Azure-jobb: Koppla Docker-imagen till Azure App (om alla tester är godkända)
   azure_deploy:
     needs: docker  # Kör endast om "docker"-jobbet är klart
