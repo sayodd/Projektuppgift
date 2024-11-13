@@ -44,8 +44,7 @@ jobs:
     steps:
       # Bygg Docker-imagen med docker build
       - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/gabbesapp.
-
+        run: docker build -t gabrielheido/gabriel:latest
       # Logga in på DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v2
