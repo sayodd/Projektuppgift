@@ -26,17 +26,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Set up Node.js (or other backend environment)
         uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '14' # Anpassa beroende på din stack
 
       - name: Install dependencies
-        run: npm install
+        run: npm install # Anpassa för ditt projekt
 
       - name: Run tests
         id: run_tests
-        run: npm test
+        run: npm test # Anpassa för ditt projekt
 
       - name: Upload test results if failed
         if: failure() && ${{ github.event.inputs.generate_error_log == 'true' }}
