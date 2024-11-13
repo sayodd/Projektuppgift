@@ -52,7 +52,9 @@ jobs:
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
 
       - name: Publish Docker image to DockerHub
-        run: docker push ${{ secrets.DOCKER_GABRIEL_USERNAME }}/myapp
+        run: docker push ${{ gabrielheido/gabriel}/myapp
+
+  
 
   # Azure-jobb: Koppla Docker-imagen till Azure App (om alla tester är godkända)
   azure_deploy:
