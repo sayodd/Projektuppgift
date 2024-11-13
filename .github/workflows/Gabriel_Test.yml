@@ -42,19 +42,20 @@ jobs:
     needs: build  # Kör endast om "build"-jobbet är klart
     runs-on: ubuntu-latest
     steps:
-    - name: Build Docker image with buildx
-  run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/myapp .
+      # Bygg Docker-imagen
+      - name: Build Docker image with buildx
+        run: docker buildx build -t ${{ secrets.DOCKER_USERNAME }}/myapp .
 
+      # Logga in på DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
 
+      # Publicera Docker-imagen till DockerHub
       - name: Publish Docker image to DockerHub
-        run: docker push ${{ gabrielheido/gabriel}/myapp
-
-  
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/myapp
 
   # Azure-jobb: Koppla Docker-imagen till Azure App (om alla tester är godkända)
   azure_deploy:
@@ -63,7 +64,11 @@ jobs:
     steps:
       - name: Login to Azure
         uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Docker image to Azure App
         run: |
-          az webapp config container set --name ${{ secrets.AZURE_APP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/myapp
+          az webapp config container set --name ${{ secrets.AZURE_APP_NAME }} \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --docker-custom-image-name ${{ secrets.DOCKER_USERNAME }}/myapp
