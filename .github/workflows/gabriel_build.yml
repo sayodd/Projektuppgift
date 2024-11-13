@@ -1,18 +1,30 @@
-name: Gabriel Build Docker Image
+name: Build Workflow
 
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Test Workflow"]  # Triggeras efter att Test Workflow har slutförts
+    types:
+      - completed
 
 jobs:
-  build:
+  build_and_push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      - name: List files
-        run: ls -R  # För att kontrollera att Dockerfile finns i rotkatalogen
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
-        run: docker build -t myapp .
+        run: |
+          docker build -t myapp:latest .
+
+      - name: Push Docker image to DockerHub
+        if: success()  # Om testerna och byggandet lyckades
+        uses: docker/build-push-action@v2
+        with:
+          username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
+          password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
+          repository: gabrielheido/gabriel
+          tags: latest
