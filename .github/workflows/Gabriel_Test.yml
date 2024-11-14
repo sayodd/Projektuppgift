@@ -1,4 +1,4 @@
-name: Full CI/CD Pipeline for Application
+name: Pipeline 
 
 on:
   workflow_dispatch:
@@ -92,3 +92,4 @@ jobs:
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
         run: |
           python app.py
+          
