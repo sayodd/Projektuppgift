@@ -13,16 +13,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       
-    - name: Logga in på Docker Hub
+    - name: Log in to Docker Hub
       env:
         DOCKER_USER: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
       run: |
         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 
-    - name: Bygg Docker-image
-      run: docker build . -t attaponsayod/attapon:${{ github.sha }}
+    - name: Build Docker image
+      run: docker build . -t attaponsayod/attapon:weather_app
 
-    - name: Pusha Docker-image
-      run: docker push attaponsayod/attapon:${{ github.sha }}
-
+    - name: Push Docker image
+      run: docker push attaponsayod/attapon:weather_app
