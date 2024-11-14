@@ -1,11 +1,10 @@
-# Använd Ubuntu-basen
-FROM ubuntu:latest
+FROM python:3.9-slim
 
-# Uppdatera och installera NGINX
-RUN apt-get update && apt-get install -y nginx
+COPY requirements.txt /app/requirements.txt
+WORKDIR /app
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Skapa en enkel HTML-fil
-RUN echo "<html><body><h1>Hello från Docker image!</h1></body></html>" > /var/www/html/index.html
+COPY . /app
+EXPOSE 80
+CMD ["gunicorn", "-b", "0.0.0.0:80", "app:app"]
 
-# Starta NGINX när containern startar
-CMD ["nginx", "-g", "daemon off;"]
