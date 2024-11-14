@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # Define the test job
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -25,8 +25,9 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m unittest discover -s tests | tee test_output.txt
-        continue-on-error: false  # The job will stop if tests fail
+          python -m unittest discover -s . -p "*.py" | tee test_output.txt
+          continue-on-error: false
+
 
   build:
     runs-on: ubuntu-latest
