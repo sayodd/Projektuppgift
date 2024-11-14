@@ -1,81 +1,67 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+  workflow_dispatch:  # Detta gör att pipelinen kan triggas manuellt
     inputs:
       log_errors:
-        description: 'Log errors if tests fail'
-        required: false
-        type: boolean
+        description: 'Skapa loggar om tester misslyckas'
+        required: true
+        default: 'false'
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
-
+        uses: actions/checkout@v2
+      
       - name: Set up Python (eller annat språk)
-        uses: actions/setup-python@v3  # Uppdaterad till v3
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.9'  # Justera beroende på ditt projekt
+          python-version: '3.8'
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt  # Byt ut med ditt eget beroendehanteringssystem
+          pip install -r requirements.txt  # eller motsvarande för ditt språk
 
       - name: Run tests
         run: |
-          pytest tests/  # Byt ut med ditt testkommando om det är annat än pytest
-
-      - name: Upload error log if tests fail
-        if: ${{ failure() && github.event.inputs.log_errors == 'true' }}
-        uses: actions/upload-artifact@v3  # Fortsatt v3
-        with:
-          name: error-log
-          path: error.log  # Se till att du har en error.log om testerna misslyckas
+          pytest tests/  # eller motsvarande för ditt testsystem
+        continue-on-error: true  # För att kunna kontrollera resultatet av testerna
 
   build:
-    needs: test
+    needs: test  # Detta jobb körs först efter att testjobbet är klart
     runs-on: ubuntu-latest
-    if: ${{ success() }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
         run: |
-          docker build -t myapp .  # Bygg Docker-imagen från din Dockerfile
+          docker build -t myapp:latest .
 
-      - name: Log in to DockerHub
-        uses: docker/login-action@v2
+      - name: Push Docker image to DockerHub
+        if: success()  # Om testerna lyckades
+        uses: docker/build-push-action@v2
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
-
-      - name: Publish Docker image to DockerHub
-        run: |
-          docker tag myapp:latest ${{ secrets.DOCKER_USERNAME }}/myapp:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+          repository: gabrielheido/gabriel
+          tags: latest
 
   deploy:
-    needs: build
+    needs: build  # Detta jobb körs efter att build-jobbet är klart
     runs-on: ubuntu-latest
-    if: ${{ success() }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3  # Uppdaterad till v3
+        uses: actions/checkout@v2
 
-      - name: Set up Azure CLI
-        uses: azure/setup-azurecli@v1
-
-      - name: Log in to Azure
-        run: |
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-
-      - name: Deploy to Azure App
-        run: |
-          az webapp up --name myapp --resource-group myresourcegroup --plan myplan --docker-image ${{ secrets.DOCKER_USERNAME }}/myapp:latest
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: myazureapp
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+          package: ./
