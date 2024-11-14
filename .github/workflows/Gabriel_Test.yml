@@ -19,11 +19,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t gabrielsayod/gabriel:latest .
+          docker build -t gabrielheido/gabriel:latest .
       
       - name: Save Docker Image as TAR file
         run: |
-          docker save gabrielsayod/gabriel:latest -o yourimage.tar
+          docker save gabrielheido/gabriel:latest -o yourimage.tar
           
       - name: Save Docker Image as Artifact
         uses: actions/upload-artifact@v3
@@ -65,7 +65,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
-          az webapp create --name gabriel_app --resource-group project --plan Grupp_projekt --deployment-container-image-name gabrielsayod/gabriel:latest
+          az webapp create --name gabriel_app --resource-group project --plan Grupp_projekt --deployment-container-image-name gabrielheido/gabriel:latest
 
   test:
     runs-on: ubuntu-latest
