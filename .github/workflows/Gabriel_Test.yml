@@ -21,12 +21,19 @@ jobs:
         run: |
           docker build -t gabrielheido/gabriel:latest .
       
-      - name: Build Docker image
-        run: docker build . -t gabrielheido/gabriel:latest
+      - name: Save Docker Image as TAR file
+        run: |
+          docker save gabrielheido/gabriel:latest -o yourimage.tar
 
       
-      - name: Push Docker image
-        run: docker push gabrielheido/gabriel:latest
+      - name: Save Docker Image as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+         name: docker-image
+         path: ./yourimage.tar
+
+
+       
           
        
   deploy:
@@ -51,6 +58,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
           password: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
+      - name: Log in to Docker Hub
+        env:
+         DOCKER_USER: ${{ secrets.DOCKER_GABRIEL_USERNAME }}
+         DOCKER_PASSWORD: ${{ secrets.DOCKER_GABRIEL_PASSWORD }}
+        run: |
+         echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+
+      - name: Build Docker image
+        run: docker build . -t gabrielsayod/gabriel:weather_app
+
+      - name: Push Docker image
+        run: docker push gabrielsayod/gabriel:weather_app
+
 
       - name: Push Docker Image to DockerHub
         run: |
