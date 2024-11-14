@@ -90,5 +90,10 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m unittest app.py | tee test_output.txt
-          
+         if grep -q "FAILED" test_output.txt; then
+            echo "Tests failed. Logging to error_log.txt."
+            cp test_output.txt error_log.txt
+            exit 1  # Markerar steget som fail
+          else
+            echo "Tests passed."
+          fi
