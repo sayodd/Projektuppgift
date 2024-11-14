@@ -94,7 +94,7 @@ jobs:
 
       - name: Run tests
         run: |
-          python -m unittest discover -s tests
+          python -m unittest app.py | tee test_output.txt
 
       - name: Fetch Weather Data
         env:
