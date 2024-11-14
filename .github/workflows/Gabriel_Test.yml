@@ -56,7 +56,7 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker push gabrielsayod/gabriel:latest
+          docker push gabrielheido/gabriel:latest
 
       - name: Azure Login
         uses: azure/login@v1
