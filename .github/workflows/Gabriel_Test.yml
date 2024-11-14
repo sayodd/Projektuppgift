@@ -66,10 +66,10 @@ jobs:
          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
 
       - name: Build Docker image
-        run: docker build . -t gabrielsayod/gabriel:weather_app
+        run: docker build . -t gabrielheido/gabriel:weather_app
 
       - name: Push Docker image
-        run: docker push gabrielsayod/gabriel:weather_app
+        run: docker push gabrielheido/gabriel:weather_app
 
 
       - name: Push Docker Image to DockerHub
