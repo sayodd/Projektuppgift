@@ -41,7 +41,8 @@ jobs:
 
     - name: Upload log file (optional for access in GitHub)
       if: failure() && inputs.log_errors == 'true'
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: test-logs
         path: logg.txt
+
