@@ -8,7 +8,7 @@ on:
   workflow_dispatch: 
     inputs:
       log_errors: 
-        description: "Generate error log if tests fail (True or False)"
+        description: "Generar error log om tests failar (True or False)"
         required: true
         default: "True" 
 
@@ -61,4 +61,12 @@ jobs:
       - name: Log in to Docker Hub
         env:
           DOCKER_USER: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
-      
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
+
+      - name: Build Docker image
+        run: docker build . -t attaponsayod/attapon:weather_app
+
+      - name: Push Docker image
+        run: docker push attaponsayod/attapon:weather_app
