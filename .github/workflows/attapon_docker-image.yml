@@ -29,9 +29,10 @@ jobs:
           if grep -q "FAILED" test_output.txt; then
             echo "Tests failed. Logging to error_log.txt."
             cp test_output.txt error_log.txt
-            exit 1  # Markerar steget som fail
+            exit 1
           else
             echo "Tests passed."
+          fi
 
   build:
     runs-on: ubuntu-latest
