@@ -38,6 +38,7 @@ jobs:
           else
             echo "Tests passed."
             echo "test_result=passed" >> $GITHUB_ENV
+          fi
 
       - name: Handle logs if tests fail and logging is enabled
         if: env.test_result == 'failed' && inputs.log_errors == 'True'
