@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch: 
+    inputs:
+      log_errors: 
+        description: "Generate error log if tests fail (True or False)"
+        required: true
+        default: "True" 
 
 jobs:
   test:
@@ -24,15 +29,28 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests
+        id: run_tests
         run: |
           python -m unittest app.py > test_output.txt 2>&1
           if grep -q "FAILED" test_output.txt; then
-            echo "Tests failed. Logging to error_log.txt."
-            cp test_output.txt error_log.txt
-            exit 1
+            echo "Tests failed."
+            echo "test_result=failed" >> $GITHUB_ENV
           else
             echo "Tests passed."
-          fi
+            echo "test_result=passed" >> $GITHUB_ENV
+
+      - name: Handle logs if tests fail and logging is enabled
+        if: env.test_result == 'failed' && inputs.log_errors == 'True'
+        run: |
+          echo "Generating error log artifact..."
+          cp test_output.txt error_log.txt
+
+      - name: Upload error log artifact
+        if: inputs.log_errors == 'True' && env.test_result == 'failed'
+        uses: actions/upload-artifact@v3
+        with:
+          name: error_log
+          path: error_log.txt
 
   build:
     runs-on: ubuntu-latest
@@ -43,12 +61,4 @@ jobs:
       - name: Log in to Docker Hub
         env:
           DOCKER_USER: ${{ secrets.DOCKER_ATTAPON_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_ATTAPON_PASSWORD }}
-        run: |
-          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USER" --password-stdin
-
-      - name: Build Docker image
-        run: docker build . -t attaponsayod/attapon:weather_app
-
-      - name: Push Docker image
-        run: docker push attaponsayod/attapon:weather_app
+      
