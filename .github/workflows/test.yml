@@ -1,4 +1,4 @@
-name: Pipeline2
+name: Pipeline
 
 on:
   workflow_dispatch: 
@@ -87,10 +87,24 @@ jobs:
 
       - name: Run tests
         run: |
+          python -m unittest app.py > test_output.txt 2>&1
           if grep -q "FAILED" test_output.txt; then
-            echo "Tests failed. Logging to error_log.txt."
-            cp test_output.txt error_log.txt
-            exit 1  # Markerar steget som fail
+            echo "Tests failed."
+            echo "test_result=failed" >> $GITHUB_ENV
           else
             echo "Tests passed."
+            echo "test_result=passed" >> $GITHUB_ENV
           fi
+
+      - name: Handle logs if tests fail and logging is enabled
+        if: env.test_result == 'failed' && inputs.log_errors == 'True'
+        run: |
+          echo "Generating error log artifact..."
+          cp test_output.txt error_log.txt
+
+      - name: Upload error log artifact
+        if: inputs.log_errors == 'True' && env.test_result == 'failed'
+        uses: actions/upload-artifact@v3
+        with:
+          name: error_log
+          path: error_log.txt
