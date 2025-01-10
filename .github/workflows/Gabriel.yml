@@ -59,6 +59,7 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
+    if: needs.test.result == 'success'
     steps:
       - name: Check out code
         uses: actions/checkout@v2
